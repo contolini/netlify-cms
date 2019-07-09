@@ -396,83 +396,16 @@ class EditorToolbar extends React.Component {
       t,
     } = this.props;
     if (currentStatus) {
-      return (
-        <>
-          {this.renderDeployPreviewControls(t('editor.editorToolbar.deployPreviewButtonLabel'))}
-          <ToolbarDropdown
-            dropdownTopOverlap="40px"
-            dropdownWidth="120px"
-            renderButton={() => (
-              <StatusButton>
-                {isUpdatingStatus
-                  ? t('editor.editorToolbar.updating')
-                  : t('editor.editorToolbar.setStatus')}
-              </StatusButton>
-            )}
-          >
-            <StatusDropdownItem
-              label={t('editor.editorToolbar.draft')}
-              onClick={() => onChangeStatus('DRAFT')}
-              icon={currentStatus === status.get('DRAFT') && 'check'}
-            />
-            <StatusDropdownItem
-              label={t('editor.editorToolbar.inReview')}
-              onClick={() => onChangeStatus('PENDING_REVIEW')}
-              icon={currentStatus === status.get('PENDING_REVIEW') && 'check'}
-            />
-            {useForkWorkflow ? (
-              ''
-            ) : (
-              <StatusDropdownItem
-                label={t('editor.editorToolbar.ready')}
-                onClick={() => onChangeStatus('PENDING_PUBLISH')}
-                icon={currentStatus === status.get('PENDING_PUBLISH') && 'check'}
-              />
-            )}
-          </ToolbarDropdown>
-          {useForkWorkflow ? (
-            ''
-          ) : (
-            <ToolbarDropdown
-              dropdownTopOverlap="40px"
-              dropdownWidth="150px"
-              renderButton={() => (
-                <PublishButton>
-                  {isPublishing
-                    ? t('editor.editorToolbar.publishing')
-                    : t('editor.editorToolbar.publish')}
-                </PublishButton>
-              )}
-            >
-              <DropdownItem
-                label={t('editor.editorToolbar.publishNow')}
-                icon="arrow"
-                iconDirection="right"
-                onClick={onPublish}
-              />
-              {collection.get('create') ? (
-                <DropdownItem
-                  label={t('editor.editorToolbar.publishAndCreateNew')}
-                  icon="add"
-                  onClick={onPublishAndNew}
-                />
-              ) : null}
-            </ToolbarDropdown>
-          )}
-        </>
-      );
+      // Most buttons are disabled
+      return null;
     }
 
     /**
      * Publish control for published workflow entry.
      */
     if (!isNewEntry) {
-      return (
-        <>
-          {this.renderDeployPreviewControls(t('editor.editorToolbar.deployButtonLabel'))}
-          <StatusPublished>{t('editor.editorToolbar.published')}</StatusPublished>
-        </>
-      );
+      // Most buttons are disabled
+      return null;
     }
   };
 
