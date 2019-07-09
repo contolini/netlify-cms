@@ -18,6 +18,7 @@ function mapStateToProps(state, ownProps) {
     const slug = ownProps.match.params.slug;
     const unpublishedEntry = selectUnpublishedEntry(state, collection.get('name'), slug);
     const pullRequestLink = selectPullRequestLink(state);
+    // console.log(state);
     if (unpublishedEntry) {
       returnObj.unpublishedEntry = true;
       returnObj.entry = unpublishedEntry;
