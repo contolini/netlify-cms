@@ -339,7 +339,7 @@ class Editor extends React.Component {
   };
 
   handleViewPullRequest = () => {
-    window.open('https://example.com', '_blank');
+    window.open('https://github.com/test-things/design-system/pulls', '_blank');
   };
 
   render() {
