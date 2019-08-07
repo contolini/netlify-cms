@@ -364,14 +364,20 @@ class EditorToolbar extends React.Component {
       <SaveButton key="save-button" onClick={() => hasChanged && onPersist()}>
         {isPersisting ? t('editor.editorToolbar.saving') : t('editor.editorToolbar.save')}
       </SaveButton>,
-      isModification ? (
-        <ViewPullRequestButton
-          onClick={onViewPullRequest}
-          key="view-pull-request-button"
+      !showDelete && !hasUnpublishedChanges && !isModification ? null : (
+        <DeleteButton
+          key="delete-button"
+          onClick={hasUnpublishedChanges ? onDeleteUnpublishedChanges : onDelete}
         >
-          View Design System pull requests
-        </ViewPullRequestButton>
-      ) : null
+          {isDeleting ? t('editor.editorToolbar.deleting') : deleteLabel}
+        </DeleteButton>
+      ),
+      <ViewPullRequestButton
+        onClick={onViewPullRequest}
+        key="view-pull-request-button"
+      >
+        View Design System pull requests
+      </ViewPullRequestButton>
     ];
   };
 
