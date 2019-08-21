@@ -223,6 +223,7 @@ class EditorToolbar extends React.Component {
     displayUrl: PropTypes.string,
     collection: ImmutablePropTypes.map.isRequired,
     hasWorkflow: PropTypes.bool,
+    useForkWorkflow: PropTypes.bool,
     hasUnpublishedChanges: PropTypes.bool,
     isNewEntry: PropTypes.bool,
     isModification: PropTypes.bool,
@@ -391,6 +392,7 @@ class EditorToolbar extends React.Component {
       onPublishAndNew,
       currentStatus,
       isNewEntry,
+      useForkWorkflow,
       t,
     } = this.props;
     if (currentStatus) {
