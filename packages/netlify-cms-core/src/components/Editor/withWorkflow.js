@@ -11,7 +11,9 @@ function mapStateToProps(state, ownProps) {
   const collection = collections.get(ownProps.match.params.name);
   const returnObj = {
     isEditorialWorkflow,
-    showDelete: !ownProps.newEntry && selectAllowDeletion(collection),
+    // showDelete: !ownProps.newEntry && selectAllowDeletion(collection),
+    // We don't like the delete button, hide it forever.
+    showDelete: false,
   };
   if (isEditorialWorkflow) {
     const slug = ownProps.match.params.slug;

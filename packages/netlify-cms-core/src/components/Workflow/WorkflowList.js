@@ -212,7 +212,9 @@ class WorkflowList extends React.Component {
           const ownStatus = entry.getIn(['metaData', 'status']);
           const collection = entry.getIn(['metaData', 'collection']);
           const isModification = entry.get('isModification');
-          const canPublish = ownStatus === status.last() && !entry.get('isPersisting', false);
+          // const canPublish = ownStatus === status.last() && !entry.get('isPersisting', false);
+          // We don't want the publish button, hide it always.
+          const canPublish = false;
           return (
             <DragSource
               namespace={DNDNamespace}

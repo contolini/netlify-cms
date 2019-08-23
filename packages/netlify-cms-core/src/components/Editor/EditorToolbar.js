@@ -359,7 +359,9 @@ class EditorToolbar extends React.Component {
       <SaveButton key="save-button" onClick={() => hasChanged && onPersist()}>
         {isPersisting ? t('editor.editorToolbar.saving') : t('editor.editorToolbar.save')}
       </SaveButton>,
-      !showDelete && !hasUnpublishedChanges && !isModification ? null : (
+      // !showDelete && !hasUnpublishedChanges && !isModification ? null : (
+      // We don't want the delete button, always hide it.
+      true ? null : (
         <DeleteButton
           key="delete-button"
           onClick={hasUnpublishedChanges ? onDeleteUnpublishedChanges : onDelete}
@@ -488,11 +490,6 @@ class EditorToolbar extends React.Component {
           <ToolbarSubSectionFirst>
             {hasWorkflow ? this.renderWorkflowSaveControls() : this.renderSimpleSaveControls()}
           </ToolbarSubSectionFirst>
-          <ToolbarSubSectionLast>
-            {hasWorkflow
-              ? this.renderWorkflowPublishControls()
-              : this.renderSimplePublishControls()}
-          </ToolbarSubSectionLast>
         </ToolbarSectionMain>
         <ToolbarSectionMeta>
           <SettingsDropdown

@@ -85,6 +85,7 @@ export function getPhrases() {
         deployPreviewPendingButtonLabel: 'Check for Preview',
         deployPreviewButtonLabel: 'View Preview',
         deployButtonLabel: 'View Live',
+        viewPullRequests: 'View pull requests'
       },
       editorWidgets: {
         unknownControl: {
@@ -138,7 +139,7 @@ export function getPhrases() {
         onFailToUpdateStatus: 'Failed to update status: %{details}',
         missingRequiredField:
           "Oops, you've missed a required field. Please complete before saving.",
-        entrySaved: 'Entry saved',
+        entrySaved: 'A pull request has been created/updated',
         entryPublished: 'Entry published',
         onFailToPublishEntry: 'Failed to publish: %{details}',
         entryUpdated: 'Entry status updated',

@@ -4,6 +4,11 @@
 A CMS for static site generators. Give users a simple way to edit
 and add content to any site built with a static site generator.
 
+## About this fork
+
+This is a fork of Netlify CMS [modified](https://github.com/netlify/netlify-cms/compare/master...cfpb:master) for specific [CFPB](https://github.com/cfpb) use cases,
+notably for use with our [Design System](https://github.com/cfpb/design-system).
+
 ## How It Works
 
 Netlify CMS is a single-page app that you pull into the `/admin` part of your site.
