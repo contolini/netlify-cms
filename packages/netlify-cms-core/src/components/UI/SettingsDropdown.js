@@ -50,7 +50,7 @@ const SettingsDropdown = ({ displayUrl, imageUrl, onLogoutClick, t }) => (
   <React.Fragment>
     {displayUrl ? (
       <AppHeaderSiteLink href={displayUrl} target="_blank">
-        {stripProtocol(displayUrl)}
+        {t('editor.editorToolbar.viewPullRequests')}
       </AppHeaderSiteLink>
     ) : null}
     <Dropdown

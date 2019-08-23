@@ -428,7 +428,7 @@ function mapStateToProps(state, ownProps) {
   const boundGetAsset = getAsset.bind(null, state);
   const user = auth && auth.get('user');
   const hasChanged = entryDraft.get('hasChanged');
-  const displayUrl = config.get('display_url');
+  const displayUrl = config.get('pull_request_url');
   const hasWorkflow = config.get('publish_mode') === EDITORIAL_WORKFLOW;
   const useForkWorkflow = globalUI.get('useForkWorkflow', false);
   const isModification = entryDraft.getIn(['entry', 'isModification']);

@@ -85,6 +85,7 @@ export function getPhrases() {
         deployPreviewPendingButtonLabel: 'Check for Preview',
         deployPreviewButtonLabel: 'View Preview',
         deployButtonLabel: 'View Live',
+        viewPullRequests: 'View pull requests'
       },
       editorWidgets: {
         unknownControl: {
