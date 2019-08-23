@@ -7,7 +7,9 @@ and add content to any site built with a static site generator.
 ## About this fork
 
 This is a fork of Netlify CMS [modified](https://github.com/netlify/netlify-cms/compare/master...cfpb:master) for specific [CFPB](https://github.com/cfpb) use cases,
-notably for use with our [Design System](https://github.com/cfpb/design-system).
+notably for use with our [Design System](https://github.com/cfpb/design-system). 
+To update this fork with changes from upstream, try using [GitHub's interface](https://github.com/KirstieJane/STEMMRoleModels/wiki/Syncing-your-fork-to-the-original-repository-via-the-browser). 
+To add features to this fork, follow [these steps](https://gist.github.com/contolini/3463e0ee85a5c6a29fdf1b75032c9444).
 
 ## How It Works
 
