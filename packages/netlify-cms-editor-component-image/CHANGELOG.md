@@ -3,6 +3,68 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.6.2](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-editor-component-image/compare/netlify-cms-editor-component-image@2.6.1...netlify-cms-editor-component-image@2.6.2) (2020-02-14)
+
+**Note:** Version bump only for package netlify-cms-editor-component-image
+
+
+
+
+
+## [2.6.1](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-editor-component-image/compare/netlify-cms-editor-component-image@2.6.0...netlify-cms-editor-component-image@2.6.1) (2020-02-13)
+
+
+### Bug Fixes
+
+* change getAsset to not return a promise ([#3232](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-editor-component-image/issues/3232)) ([ab685e8](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-editor-component-image/commit/ab685e85943d1ac48142f157683bc2126fd6af16))
+
+
+
+
+
+# [2.6.0](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-editor-component-image/compare/netlify-cms-editor-component-image@2.5.0...netlify-cms-editor-component-image@2.6.0) (2020-02-10)
+
+
+### Features
+
+* field based media/public folders ([#3208](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-editor-component-image/issues/3208)) ([97bc0c8](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-editor-component-image/commit/97bc0c8dc489e736f89d748ba832d78400fe4332))
+
+
+### Reverts
+
+* Revert "chore(release): publish" ([a015d1d](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-editor-component-image/commit/a015d1d92a4b1c0130c44fcef1c9ecdb157a0f07))
+
+
+
+
+
+# [2.5.0](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-editor-component-image/compare/netlify-cms-editor-component-image@2.5.0-beta.0...netlify-cms-editor-component-image@2.5.0) (2020-01-07)
+
+**Note:** Version bump only for package netlify-cms-editor-component-image
+
+
+
+
+
+# [2.5.0-beta.0](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-editor-component-image/compare/netlify-cms-editor-component-image@2.4.3...netlify-cms-editor-component-image@2.5.0-beta.0) (2019-12-18)
+
+
+### Features
+
+* bundle assets with content ([#2958](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-editor-component-image/issues/2958)) ([2b41d8a](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-editor-component-image/commit/2b41d8a838a9c8a6b21cde2ddd16b9288334e298))
+
+
+
+
+
+## [2.4.3](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-editor-component-image/compare/netlify-cms-editor-component-image@2.4.2...netlify-cms-editor-component-image@2.4.3) (2019-11-07)
+
+**Note:** Version bump only for package netlify-cms-editor-component-image
+
+
+
+
+
 ## [2.4.2](https://github.com/netlify/netlify-cms/tree/master/packages/netlify-cms-editor-component-image/compare/netlify-cms-editor-component-image@2.4.2-beta.0...netlify-cms-editor-component-image@2.4.2) (2019-04-10)
 
 **Note:** Version bump only for package netlify-cms-editor-component-image

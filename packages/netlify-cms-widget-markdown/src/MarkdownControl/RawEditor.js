@@ -3,26 +3,27 @@ import PropTypes from 'prop-types';
 import ImmutablePropTypes from 'react-immutable-proptypes';
 import styled from '@emotion/styled';
 import { ClassNames } from '@emotion/core';
-import { Editor as Slate } from 'slate-react';
-import Plain from 'slate-plain-serializer';
 import { debounce } from 'lodash';
+import { Value } from 'slate';
+import { Editor as Slate, setEventTransfer } from 'slate-react';
+import Plain from 'slate-plain-serializer';
+import isHotkey from 'is-hotkey';
 import { lengths, fonts } from 'netlify-cms-ui-default';
+import { markdownToHtml } from '../serializers';
 import { editorStyleVars, EditorControlBar } from '../styles';
 import Toolbar from './Toolbar';
 
-const styleStrings = {
-  slateRaw: `
-    position: relative;
-    overflow: hidden;
-    overflow-x: auto;
-    min-height: ${lengths.richTextEditorMinHeight};
-    font-family: ${fonts.mono};
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
-    border-top: 0;
-    margin-top: -${editorStyleVars.stickyDistanceBottom};
-  `,
-};
+const rawEditorStyles = ({ minimal }) => `
+  position: relative;
+  overflow: hidden;
+  overflow-x: auto;
+  min-height: ${minimal ? 'auto' : lengths.richTextEditorMinHeight};
+  font-family: ${fonts.mono};
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-top: 0;
+  margin-top: -${editorStyleVars.stickyDistanceBottom};
+`;
 
 const RawEditorContainer = styled.div`
   position: relative;
@@ -40,40 +41,64 @@ export default class RawEditor extends React.Component {
     return !this.state.value.equals(nextState.value);
   }
 
-  handleChange = change => {
-    if (!this.state.value.document.equals(change.value.document)) {
-      this.handleDocumentChange(change);
+  componentDidMount() {
+    if (this.props.pendingFocus) {
+      this.editor.focus();
+      this.props.pendingFocus();
     }
-    this.setState({ value: change.value });
+  }
+
+  handleCopy = (event, editor) => {
+    const { getAsset, resolveWidget } = this.props;
+    const markdown = Plain.serialize(Value.create({ document: editor.value.fragment }));
+    const html = markdownToHtml(markdown, { getAsset, resolveWidget });
+    setEventTransfer(event, 'text', markdown);
+    setEventTransfer(event, 'html', html);
+    event.preventDefault();
+  };
+
+  handleCut = (event, editor, next) => {
+    this.handleCopy(event, editor, next);
+    editor.delete();
+  };
+
+  handlePaste = (event, editor, next) => {
+    event.preventDefault();
+    const data = event.clipboardData;
+    if (isHotkey('shift', event)) {
+      return next();
+    }
+
+    const value = Plain.deserialize(data.getData('text/plain'));
+    return editor.insertFragment(value.document);
+  };
+
+  handleChange = editor => {
+    if (!this.state.value.document.equals(editor.value.document)) {
+      this.handleDocumentChange(editor);
+    }
+    this.setState({ value: editor.value });
   };
 
   /**
    * When the document value changes, serialize from Slate's AST back to plain
    * text (which is Markdown) and pass that up as the new value.
    */
-  handleDocumentChange = debounce(change => {
-    const value = Plain.serialize(change.value);
+  handleDocumentChange = debounce(editor => {
+    const value = Plain.serialize(editor.value);
     this.props.onChange(value);
   }, 150);
-
-  /**
-   * If a paste contains plain text, deserialize it to Slate's AST and insert
-   * to the document. Selection logic (where to insert, whether to replace) is
-   * handled by Slate.
-   */
-  handlePaste = (e, data, change) => {
-    if (data.text) {
-      const fragment = Plain.deserialize(data.text).document;
-      return change.insertFragment(fragment);
-    }
-  };
 
   handleToggleMode = () => {
     this.props.onMode('visual');
   };
 
+  processRef = ref => {
+    this.editor = ref;
+  };
+
   render() {
-    const { className, field } = this.props;
+    const { className, field, t } = this.props;
     return (
       <RawEditorContainer>
         <EditorControlBar>
@@ -82,6 +107,7 @@ export default class RawEditor extends React.Component {
             buttons={field.get('buttons')}
             disabled
             rawMode
+            t={t}
           />
         </EditorControlBar>
         <ClassNames>
@@ -90,12 +116,16 @@ export default class RawEditor extends React.Component {
               className={cx(
                 className,
                 css`
-                  ${styleStrings.slateRaw}
+                  ${rawEditorStyles({ minimal: field.get('minimal') })}
                 `,
               )}
               value={this.state.value}
               onChange={this.handleChange}
               onPaste={this.handlePaste}
+              onCut={this.handleCut}
+              onCopy={this.handleCopy}
+              ref={this.processRef}
+              t={t}
             />
           )}
         </ClassNames>
@@ -110,4 +140,5 @@ RawEditor.propTypes = {
   className: PropTypes.string.isRequired,
   value: PropTypes.string,
   field: ImmutablePropTypes.map.isRequired,
+  t: PropTypes.func.isRequired,
 };

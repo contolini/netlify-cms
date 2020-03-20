@@ -34,7 +34,7 @@ collections: # A list of collections the CMS should be able to edit
         required: false
         tagname: ''
 
-      - { label: 'Body', name: 'body', widget: 'markdown', hint: 'Main content goes here.' }
+      - { editorComponents: ['youtube'], label: 'Body', name: 'body', widget: 'markdown', hint: 'Main content goes here.' }
     meta:
       - { label: 'SEO Description', name: 'description', widget: 'text' }
 
@@ -70,7 +70,13 @@ collections: # A list of collections the CMS should be able to edit
                   max: 10,
                 }
               - { label: 'Default Author', name: author, widget: string }
-              - { label: 'Default Thumbnail', name: thumb, widget: image, class: 'thumb', required: false }
+              - {
+                  label: 'Default Thumbnail',
+                  name: thumb,
+                  widget: image,
+                  class: 'thumb',
+                  required: false,
+                }
 
       - name: 'authors'
         label: 'Authors'

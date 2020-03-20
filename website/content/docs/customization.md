@@ -71,20 +71,20 @@ Registers a template for a folder collection or an individual file in a file col
     ```html
     <script src="https://unpkg.com/netlify-cms@^2.0.0/dist/netlify-cms.js"></script>
     <script>
-    var PostPreview = createClass({
-      render: function() {
-        var entry = this.props.entry;
-        var image = entry.getIn(['data', 'image']);
-        var bg = this.props.getAsset(image);
-        return h('div', {},
-          h('h1', {}, entry.getIn(['data', 'title'])),
-          h('img', {src: bg.toString()}),
-          h('div', {"className": "text"}, this.props.widgetFor('body'))
-        );
-      }
-    });
+      var PostPreview = createClass({
+        render: function() {
+          var entry = this.props.entry;
+          var image = entry.getIn(['data', 'image']);
+          var bg = this.props.getAsset(image);
+          return h('div', {},
+            h('h1', {}, entry.getIn(['data', 'title'])),
+            h('img', {src: bg.toString()}),
+            h('div', {"className": "text"}, this.props.widgetFor('body'))
+          );
+        }
+      });
 
-    CMS.registerPreviewTemplate("posts", PostPreview);
+      CMS.registerPreviewTemplate("posts", PostPreview);
     </script>
     ```
     ### Lists and Objects

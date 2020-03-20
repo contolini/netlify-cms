@@ -43,7 +43,7 @@ const CardTitle = styled.h2`
   color: ${colors.textLead};
 `;
 
-const CardDate = styled.div`
+const CardDateContainer = styled.div`
   ${styles.text};
 `;
 
@@ -98,8 +98,27 @@ const WorkflowCardContainer = styled.div`
   }
 `;
 
+const lastChangePhraseKey = (date, author) => {
+  if (date && author) {
+    return 'lastChange';
+  } else if (date) {
+    return 'lastChangeNoAuthor';
+  } else if (author) {
+    return 'lastChangeNoDate';
+  }
+};
+
+const CardDate = translate()(({ t, date, author }) => {
+  const key = lastChangePhraseKey(date, author);
+  if (key) {
+    return (
+      <CardDateContainer>{t(`workflow.workflowCard.${key}`, { date, author })}</CardDateContainer>
+    );
+  }
+});
+
 const WorkflowCard = ({
-  collectionName,
+  collectionLabel,
   title,
   authorLastChange,
   body,
@@ -113,14 +132,9 @@ const WorkflowCard = ({
 }) => (
   <WorkflowCardContainer>
     <WorkflowLink to={editLink}>
-      <CardCollection>{collectionName}</CardCollection>
+      <CardCollection>{collectionLabel}</CardCollection>
       <CardTitle>{title}</CardTitle>
-      <CardDate>
-        {t('workflow.workflowCard.lastChange', {
-          date: timestamp || '',
-          author: authorLastChange || '',
-        })}
-      </CardDate>
+      {(timestamp || authorLastChange) && <CardDate date={timestamp} author={authorLastChange} />}
       <CardBody>{body}</CardBody>
     </WorkflowLink>
     <CardButtonContainer>
@@ -139,10 +153,10 @@ const WorkflowCard = ({
 );
 
 WorkflowCard.propTypes = {
-  collectionName: PropTypes.string.isRequired,
-  title: PropTypes.string.isRequired,
-  authorLastChange: PropTypes.string.isRequired,
-  body: PropTypes.string.isRequired,
+  collectionLabel: PropTypes.string.isRequired,
+  title: PropTypes.string,
+  authorLastChange: PropTypes.string,
+  body: PropTypes.string,
   isModification: PropTypes.bool,
   editLink: PropTypes.string.isRequired,
   timestamp: PropTypes.string.isRequired,

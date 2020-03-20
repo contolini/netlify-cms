@@ -3,7 +3,7 @@ import { getIntegrationProvider } from 'Integrations';
 import { selectIntegration } from 'Reducers';
 
 /*
- * Contant Declarations
+ * Constant Declarations
  */
 export const SEARCH_ENTRIES_REQUEST = 'SEARCH_ENTRIES_REQUEST';
 export const SEARCH_ENTRIES_SUCCESS = 'SEARCH_ENTRIES_SUCCESS';
@@ -74,7 +74,7 @@ export function querySuccess(namespace, collection, searchFields, searchTerm, re
 
 export function queryFailure(namespace, collection, searchFields, searchTerm, error) {
   return {
-    type: QUERY_SUCCESS,
+    type: QUERY_FAILURE,
     payload: {
       namespace,
       collection,

@@ -4,12 +4,11 @@ import ImmutablePropTypes from 'react-immutable-proptypes';
 import { css, Global } from '@emotion/core';
 import styled from '@emotion/styled';
 import SplitPane from 'react-split-pane';
-import { colors, colorsRaw, components, transitions } from 'netlify-cms-ui-default';
+import { colors, colorsRaw, components, transitions, IconButton } from 'netlify-cms-ui-default';
 import { ScrollSync, ScrollSyncPane } from 'react-scroll-sync';
 import EditorControlPane from './EditorControlPane/EditorControlPane';
 import EditorPreviewPane from './EditorPreviewPane/EditorPreviewPane';
 import EditorToolbar from './EditorToolbar';
-import EditorToggle from './EditorToggle';
 
 const PREVIEW_VISIBLE = 'cms.preview-visible';
 const SCROLL_SYNC_ENABLED = 'cms.scroll-sync-enabled';
@@ -27,6 +26,10 @@ const styles = {
   `,
 };
 
+const EditorToggle = styled(IconButton)`
+  margin-bottom: 12px;
+`;
+
 const ReactSplitPaneGlobalStyles = () => (
   <Global
     styles={css`
@@ -38,7 +41,7 @@ const ReactSplitPaneGlobalStyles = () => (
 
         &:before {
           content: '';
-          width: 1px;
+          width: 2px;
           height: 100%;
           position: relative;
           left: 10px;
@@ -83,7 +86,6 @@ const EditorContainer = styled.div`
 `;
 
 const Editor = styled.div`
-  max-width: 1600px;
   height: 100%;
   margin: 0 auto;
   position: relative;
@@ -124,15 +126,15 @@ class EditorInterface extends Component {
   };
 
   handleOnPersist = (opts = {}) => {
-    const { createNew = false } = opts;
+    const { createNew = false, duplicate = false } = opts;
     this.controlPaneRef.validate();
-    this.props.onPersist({ createNew });
+    this.props.onPersist({ createNew, duplicate });
   };
 
   handleOnPublish = (opts = {}) => {
-    const { createNew = false } = opts;
+    const { createNew = false, duplicate = false } = opts;
     this.controlPaneRef.validate();
-    this.props.onPublish({ createNew });
+    this.props.onPublish({ createNew, duplicate });
   };
 
   handleTogglePreview = () => {
@@ -154,13 +156,14 @@ class EditorInterface extends Component {
       fields,
       fieldsMetaData,
       fieldsErrors,
-      getAsset,
       onChange,
       showDelete,
       onDelete,
       onDeleteUnpublishedChanges,
       onChangeStatus,
       onPublish,
+      unPublish,
+      onDuplicate,
       onValidate,
       user,
       hasChanged,
@@ -174,6 +177,7 @@ class EditorInterface extends Component {
       onLogoutClick,
       loadDeployPreview,
       deployPreview,
+      draftKey,
     } = this.props;
 
     const { previewVisible, scrollSyncEnabled, showEventBlocker } = this.state;
@@ -213,7 +217,6 @@ class EditorInterface extends Component {
                 entry={entry}
                 fields={fields}
                 fieldsMetaData={fieldsMetaData}
-                getAsset={getAsset}
               />
             </PreviewPaneContainer>
           </StyledSplitPane>
@@ -230,12 +233,16 @@ class EditorInterface extends Component {
           isDeleting={entry.get('isDeleting')}
           onPersist={this.handleOnPersist}
           onPersistAndNew={() => this.handleOnPersist({ createNew: true })}
+          onPersistAndDuplicate={() => this.handleOnPersist({ createNew: true, duplicate: true })}
           onDelete={onDelete}
           onDeleteUnpublishedChanges={onDeleteUnpublishedChanges}
           onChangeStatus={onChangeStatus}
           showDelete={showDelete}
           onPublish={onPublish}
+          unPublish={unPublish}
+          onDuplicate={onDuplicate}
           onPublishAndNew={() => this.handleOnPublish({ createNew: true })}
+          onPublishAndDuplicate={() => this.handleOnPublish({ createNew: true, duplicate: true })}
           user={user}
           hasChanged={hasChanged}
           displayUrl={displayUrl}
@@ -250,22 +257,26 @@ class EditorInterface extends Component {
           loadDeployPreview={loadDeployPreview}
           deployPreview={deployPreview}
         />
-        <Editor>
+        <Editor key={draftKey}>
           <ViewControls>
-            <EditorToggle
-              enabled={collectionPreviewEnabled}
-              active={previewVisible}
-              onClick={this.handleTogglePreview}
-              icon="eye"
-              title="Toggle preview"
-            />
-            <EditorToggle
-              enabled={collectionPreviewEnabled && previewVisible}
-              active={scrollSyncEnabled}
-              onClick={this.handleToggleScrollSync}
-              icon="scroll"
-              title="Sync scrolling"
-            />
+            {collectionPreviewEnabled && (
+              <EditorToggle
+                isActive={previewVisible}
+                onClick={this.handleTogglePreview}
+                size="large"
+                type="eye"
+                title="Toggle preview"
+              />
+            )}
+            {collectionPreviewEnabled && previewVisible && (
+              <EditorToggle
+                isActive={scrollSyncEnabled}
+                onClick={this.handleToggleScrollSync}
+                size="large"
+                type="scroll"
+                title="Sync scrolling"
+              />
+            )}
           </ViewControls>
           {collectionPreviewEnabled && this.state.previewVisible ? (
             editorWithPreview
@@ -284,7 +295,6 @@ EditorInterface.propTypes = {
   fields: ImmutablePropTypes.list.isRequired,
   fieldsMetaData: ImmutablePropTypes.map.isRequired,
   fieldsErrors: ImmutablePropTypes.map.isRequired,
-  getAsset: PropTypes.func.isRequired,
   onChange: PropTypes.func.isRequired,
   onValidate: PropTypes.func.isRequired,
   onPersist: PropTypes.func.isRequired,
@@ -292,6 +302,8 @@ EditorInterface.propTypes = {
   onDelete: PropTypes.func.isRequired,
   onDeleteUnpublishedChanges: PropTypes.func.isRequired,
   onPublish: PropTypes.func.isRequired,
+  unPublish: PropTypes.func.isRequired,
+  onDuplicate: PropTypes.func.isRequired,
   onChangeStatus: PropTypes.func.isRequired,
   user: ImmutablePropTypes.map.isRequired,
   hasChanged: PropTypes.bool,
@@ -305,6 +317,7 @@ EditorInterface.propTypes = {
   onLogoutClick: PropTypes.func.isRequired,
   deployPreview: ImmutablePropTypes.map,
   loadDeployPreview: PropTypes.func.isRequired,
+  draftKey: PropTypes.string.isRequired,
 };
 
 export default EditorInterface;

@@ -79,6 +79,8 @@ const colors = {
   controlLabel: '#7a8291',
   checkerboardLight: '#f2f2f2',
   checkerboardDark: '#e6e6e6',
+  mediaDraftText: colorsRaw.purple,
+  mediaDraftBackground: colorsRaw.purpleLight,
 };
 
 const lengths = {
@@ -101,20 +103,29 @@ const transitions = {
 };
 
 const shadows = {
-  drop: css`
+  drop: `
     box-shadow: 0 2px 4px 0 rgba(19, 39, 48, 0.12);
   `,
-  dropMain: css`
+  dropMain: `
     box-shadow: 0 2px 6px 0 rgba(68, 74, 87, 0.05), 0 1px 3px 0 rgba(68, 74, 87, 0.1);
   `,
-  dropMiddle: css`
+  dropMiddle: `
     box-shadow: 0 2px 6px 0 rgba(68, 74, 87, 0.15), 0 1px 3px 0 rgba(68, 74, 87, 0.3);
   `,
-  dropDeep: css`
+  dropDeep: `
     box-shadow: 0 4px 12px 0 rgba(68, 74, 87, 0.15), 0 1px 3px 0 rgba(68, 74, 87, 0.25);
   `,
-  inset: css`
+  inset: `
     box-shadow: inset 0 0 4px rgba(68, 74, 87, 0.3);
+  `,
+};
+
+const text = {
+  fieldLabel: css`
+    font-size: 12px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: ${colors.controlLabel};
   `,
 };
 
@@ -310,11 +321,13 @@ const components = {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    min-width: max-content;
 
     &:last-of-type {
       border-bottom: 0;
     }
 
+    &.active,
     &:hover,
     &:active,
     &:focus {
@@ -340,7 +353,7 @@ const reactSelectStyles = {
       : 'transparent',
     paddingLeft: '22px',
   }),
-  menu: styles => ({ ...styles, right: 0, zIndex: 2 }),
+  menu: styles => ({ ...styles, right: 0, zIndex: 300 }),
   container: styles => ({ ...styles, padding: '0 !important' }),
   indicatorSeparator: (styles, state) =>
     state.hasValue && state.selectProps.isClearable
@@ -462,6 +475,7 @@ export {
   lengths,
   components,
   buttons,
+  text,
   shadows,
   borders,
   transitions,

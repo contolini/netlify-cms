@@ -5,8 +5,6 @@ import {
   frontmatterYAML,
 } from '../frontmatter';
 
-jest.mock('../../valueObjects/AssetProxy.js');
-
 describe('Frontmatter', () => {
   it('should parse YAML with --- delimiters', () => {
     expect(
@@ -181,14 +179,14 @@ describe('Frontmatter', () => {
         'title: YAML',
         '---',
         'Some content',
-        'On another line\n',
+        'On another line',
       ].join('\n'),
     );
   });
 
   it('should stringify YAML with missing body', () => {
     expect(FrontmatterInfer.toFile({ tags: ['front matter', 'yaml'], title: 'YAML' })).toEqual(
-      ['---', 'tags:', '  - front matter', '  - yaml', 'title: YAML', '---', '', ''].join('\n'),
+      ['---', 'tags:', '  - front matter', '  - yaml', 'title: YAML', '---', ''].join('\n'),
     );
   });
 
@@ -208,7 +206,7 @@ describe('Frontmatter', () => {
         'title: YAML',
         '---',
         'Some content',
-        'On another line\n',
+        'On another line',
       ].join('\n'),
     );
   });
@@ -229,7 +227,7 @@ describe('Frontmatter', () => {
         'title: YAML',
         '~~~',
         'Some content',
-        'On another line\n',
+        'On another line',
       ].join('\n'),
     );
   });
@@ -250,7 +248,7 @@ describe('Frontmatter', () => {
         'title: YAML',
         '^^^',
         'Some content',
-        'On another line\n',
+        'On another line',
       ].join('\n'),
     );
   });
@@ -269,7 +267,7 @@ describe('Frontmatter', () => {
         'title = "TOML"',
         '+++',
         'Some content',
-        'On another line\n',
+        'On another line',
       ].join('\n'),
     );
   });
@@ -288,7 +286,7 @@ describe('Frontmatter', () => {
         'title = "TOML"',
         '~~~',
         'Some content',
-        'On another line\n',
+        'On another line',
       ].join('\n'),
     );
   });
@@ -310,7 +308,7 @@ describe('Frontmatter', () => {
         '  "title": "JSON"',
         '}',
         'Some content',
-        'On another line\n',
+        'On another line',
       ].join('\n'),
     );
   });
@@ -332,8 +330,24 @@ describe('Frontmatter', () => {
         '  "title": "JSON"',
         '~~~',
         'Some content',
-        'On another line\n',
+        'On another line',
       ].join('\n'),
     );
+  });
+
+  it('should trim last line break if added by grey-matter', () => {
+    expect(
+      frontmatterYAML().toFile({
+        body: 'noLineBreak',
+      }),
+    ).toEqual('noLineBreak');
+  });
+
+  it('should not trim last line break if not added by grey-matter', () => {
+    expect(
+      frontmatterYAML().toFile({
+        body: 'withLineBreak\n',
+      }),
+    ).toEqual('withLineBreak\n');
   });
 });

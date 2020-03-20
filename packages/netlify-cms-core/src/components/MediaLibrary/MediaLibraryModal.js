@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from '@emotion/styled';
+import { Map } from 'immutable';
 import { isEmpty } from 'lodash';
 import { translate } from 'react-polyglot';
 import { Modal } from 'UI';
@@ -16,6 +17,7 @@ import { colors } from 'netlify-cms-ui-default';
  * widths per breakpoint.
  */
 const cardWidth = `280px`;
+const cardHeight = `240px`;
 const cardMargin = `10px`;
 
 /**
@@ -169,7 +171,9 @@ const MediaLibraryModal = ({
         onLoadMore={handleLoadMore}
         isPaginating={isPaginating}
         paginatingMessage={t('mediaLibrary.mediaLibraryModal.loading')}
+        cardDraftText={t('mediaLibrary.mediaLibraryCard.draft')}
         cardWidth={cardWidth}
+        cardHeight={cardHeight}
         cardMargin={cardMargin}
         isPrivate={privateUpload}
         loadDisplayURL={loadDisplayURL}
@@ -179,15 +183,14 @@ const MediaLibraryModal = ({
   );
 };
 
-const fileShape = {
+export const fileShape = {
   displayURL: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
   id: PropTypes.string.isRequired,
   key: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
   queryOrder: PropTypes.number,
   size: PropTypes.number,
-  url: PropTypes.string,
-  urlIsPublicPath: PropTypes.bool,
+  path: PropTypes.string.isRequired,
 };
 
 MediaLibraryModal.propTypes = {
@@ -219,6 +222,7 @@ MediaLibraryModal.propTypes = {
   handleLoadMore: PropTypes.func.isRequired,
   loadDisplayURL: PropTypes.func.isRequired,
   t: PropTypes.func.isRequired,
+  displayURLs: PropTypes.instanceOf(Map).isRequired,
 };
 
 export default translate()(MediaLibraryModal);

@@ -12,16 +12,19 @@ This tutorial guides you through the steps for adding Netlify CMS to a site that
 
 A static `admin` folder contains all Netlify CMS files, stored at the root of your published site. Where you store this folder in the source files depends on your static site generator. Here's the static file location for a few of the most popular static site generators:
 
-| These generators ...               | store static files in |
-| ---------------------------------- | --------------------- |
-| Jekyll, GitBook                    | `/` (project root)    |
-| Hugo, Gatsby, Nuxt, Gridsome, Zola | `/static`             |
-| Hexo, Middleman, Jigsaw            | `/source`             |
-| Spike                              | `/views`              |
-| Wyam                               | `/input`              |
-| Pelican                            | `/content`            |
-| VuePress                           | `/.vuepress/public`   |
-| Elmstatic                          | `/_site`              |
+| These generators ...                       | store static files in |
+| -------------------------------------------| --------------------- |
+| Jekyll, GitBook                            | `/` (project root)    |
+| Hugo, Gatsby, Nuxt, Gridsome, Zola, Sapper | `/static`             |
+| Next                                       | `/public`             |
+| Hexo, Middleman, Jigsaw                    | `/source`             |
+| Spike                                      | `/views`              |
+| Wyam                                       | `/input`              |
+| Pelican                                    | `/content`            |
+| VuePress                                   | `/.vuepress/public`   |
+| Elmstatic                                  | `/_site`              |
+| 11ty                                       | `/_site`              |
+| preact-cli                                 | `/src/static`         |
 
 If your generator isn't listed here, you can check its documentation, or as a shortcut, look in your project for a `css` or `images` folder. The contents of folders like that are usually processed as static files, so it's likely you can store your `admin` folder next to those. (When you've found the location, feel free to add it to these docs by [filing a pull request](https://github.com/netlify/netlify-cms/blob/master/CONTRIBUTING.md#pull-requests)!)
 
@@ -65,7 +68,6 @@ Then import it (assuming your project has tooling for imports):
 
 ```js
 import CMS from 'netlify-cms'
-
 // Now the registry is available via the CMS object.
 CMS.registerPreviewTemplate('my-template', MyTemplate)
 ```
@@ -86,13 +88,13 @@ backend:
   branch: master # Branch to update (optional; defaults to master)
 ```
 
-_(For Bitbucket repositories, use the [Bitbucket backend](../authentication-backends/#bitbucket-backend) instructions instead.)_
+_(For Bitbucket repositories, use the [Bitbucket backend](/docs/bitbucket-backend) instructions instead.)_
 
 The configuration above specifies your backend protocol and your publication branch. Git Gateway is an open source API that acts as a proxy between authenticated users of your site and your site repo. (We'll get to the details of that in the [Authentication section](#authentication) below.) If you leave out the `branch` declaration, it defaults to `master`.
 
 ### Editorial Workflow
 
-**Note:** Editorial workflow works with GitHub repositories only. Support for other Git hosts is [coming soon](https://github.com/netlify/netlify-cms/issues/568).
+**Note:** Editorial workflow works with GitHub repositories, and support for GitLab and Bitbucket is [in beta](/docs/beta-features/#gitlab-and-bitbucket-editorial-workflow-support).
 
 By default, saving a post in the CMS interface pushes a commit directly to the publication branch specified in `backend`. However, you also have the option to enable the [Editorial Workflow](../configuration-options/#publish-mode), which adds an interface for drafting, reviewing, and approving posts. To do this, add the following line to your Netlify CMS `config.yml`:
 
@@ -220,7 +222,7 @@ collections:
 
 ## Authentication
 
-Now that you have your Netlify CMS files in place and configured, all that's left is to enable authentication. We're using the [Netlify](https://www.netlify.com/) platform here because it's one of the quickest ways to get started, but you can learn about other authentication options in the [Authentication &amp; Backends](../authentication-backends) doc.
+Now that you have your Netlify CMS files in place and configured, all that's left is to enable authentication. We're using the [Netlify](https://www.netlify.com/) platform here because it's one of the quickest ways to get started, but you can learn about other authentication options in the [Backends](/docs/backends-overview) doc.
 
 ### Setup on Netlify
 
@@ -269,7 +271,7 @@ Your site CMS is now fully configured and ready for login!
 
 If you set your registration preference to "Invite only," invite yourself (and anyone else you choose) as a site user. To do this, select the **Identity** tab from your site dashboard, and then select the **Invite users** button. Invited users receive an email invitation with a confirmation link. Clicking the link will take you to your site with a login prompt.
 
-If you left your site registration open, or for return visits after comfirming an email invitation, access your site's CMS at `yoursite.com/admin/`.
+If you left your site registration open, or for return visits after confirming an email invitation, access your site's CMS at `yoursite.com/admin/`.
 
 **Note:** No matter where you access Netlify CMS — whether running locally, in a staging environment, or in your published site — it always fetches and commits files in your hosted repository (for example, on GitHub), on the branch you configured in your Netlify CMS config.yml file. This means that content fetched in the admin UI matches the content in the repository, which may be different from your locally running site. It also means that content saved using the admin UI saves directly to the hosted repository, even if you're running the UI locally or in staging.
 

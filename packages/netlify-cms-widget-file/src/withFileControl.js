@@ -18,15 +18,18 @@ const ImageWrapper = styled.div`
   margin-bottom: 20px;
   border: ${borders.textField};
   border-radius: ${lengths.borderRadius};
+  overflow: hidden;
   ${effects.checkerboard};
   ${shadows.inset};
 `;
 
-const Image = styled.img`
+const StyledImage = styled.img`
   width: 100%;
   height: 100%;
   object-fit: contain;
 `;
+
+const Image = props => <StyledImage role="presentation" {...props} />;
 
 const MultiImageWrapper = styled.div`
   display: flex;
@@ -91,6 +94,7 @@ export default function withFileControl({ forImage } = {}) {
       onRemoveMediaControl: PropTypes.func.isRequired,
       classNameWrapper: PropTypes.string.isRequired,
       value: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
+      t: PropTypes.func.isRequired,
     };
 
     static defaultProps = {
@@ -104,9 +108,9 @@ export default function withFileControl({ forImage } = {}) {
 
     shouldComponentUpdate(nextProps) {
       /**
-       * Always update if the value changes.
+       * Always update if the value or getAsset changes.
        */
-      if (this.props.value !== nextProps.value) {
+      if (this.props.value !== nextProps.value || this.props.getAsset !== nextProps.getAsset) {
         return true;
       }
 
@@ -161,6 +165,7 @@ export default function withFileControl({ forImage } = {}) {
         value,
         allowMultiple: !!mediaLibraryFieldOptions.get('allow_multiple', true),
         config: mediaLibraryFieldOptions.get('config'),
+        field,
       });
     };
 
@@ -204,56 +209,62 @@ export default function withFileControl({ forImage } = {}) {
     };
 
     renderImages = () => {
-      const { getAsset, value } = this.props;
+      const { getAsset, value, field } = this.props;
+
       if (isMultiple(value)) {
         return (
           <MultiImageWrapper>
             {value.map(val => (
               <ImageWrapper key={val}>
-                <Image src={getAsset(val)} />
+                <Image src={getAsset(val, field) || ''} />
               </ImageWrapper>
             ))}
           </MultiImageWrapper>
         );
       }
+
+      const src = getAsset(value, field);
       return (
         <ImageWrapper>
-          <Image src={getAsset(value)} />
+          <Image src={src || ''} />
         </ImageWrapper>
       );
     };
 
-    renderSelection = subject => (
-      <div>
-        {forImage ? this.renderImages() : null}
+    renderSelection = subject => {
+      const { t } = this.props;
+      return (
         <div>
-          {forImage ? null : this.renderFileLinks()}
-          <FileWidgetButton onClick={this.handleChange}>
-            Choose different {subject}
-          </FileWidgetButton>
-          <FileWidgetButtonRemove onClick={this.handleRemove}>
-            Remove {subject}
-          </FileWidgetButtonRemove>
+          {forImage ? this.renderImages() : null}
+          <div>
+            {forImage ? null : this.renderFileLinks()}
+            <FileWidgetButton onClick={this.handleChange}>
+              {t(`editor.editorWidgets.${subject}.chooseDifferent`)}
+            </FileWidgetButton>
+            <FileWidgetButtonRemove onClick={this.handleRemove}>
+              {t(`editor.editorWidgets.${subject}.remove`)}
+            </FileWidgetButtonRemove>
+          </div>
         </div>
-      </div>
-    );
+      );
+    };
 
-    renderNoSelection = (subject, article) => (
-      <FileWidgetButton onClick={this.handleChange}>
-        Choose {article} {subject}
-      </FileWidgetButton>
-    );
+    renderNoSelection = subject => {
+      const { t } = this.props;
+      return (
+        <FileWidgetButton onClick={this.handleChange}>
+          {t(`editor.editorWidgets.${subject}.choose`)}
+        </FileWidgetButton>
+      );
+    };
 
     render() {
       const { value, classNameWrapper } = this.props;
       const subject = forImage ? 'image' : 'file';
-      const article = forImage ? 'an' : 'a';
 
       return (
         <div className={classNameWrapper}>
-          <span>
-            {value ? this.renderSelection(subject) : this.renderNoSelection(subject, article)}
-          </span>
+          <span>{value ? this.renderSelection(subject) : this.renderNoSelection(subject)}</span>
         </div>
       );
     }

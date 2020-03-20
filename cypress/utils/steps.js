@@ -1,35 +1,41 @@
-const { notifications, workflowStatus } = require('./constants');
+const { notifications, workflowStatus, editorStatus, publishTypes } = require('./constants');
 
 function login(user) {
   cy.viewport(1200, 1200);
   if (user) {
     cy.visit('/', {
       onBeforeLoad: () => {
+        // https://github.com/cypress-io/cypress/issues/1208
+        window.indexedDB.deleteDatabase('localforage');
         window.localStorage.setItem('netlify-cms-user', JSON.stringify(user));
+        if (user.netlifySiteURL) {
+          window.localStorage.setItem('netlifySiteURL', user.netlifySiteURL);
+        }
       },
     });
+    if (user.netlifySiteURL && user.email && user.password) {
+      cy.get('input[name="email"]')
+        .clear()
+        .type(user.email);
+      cy.get('input[name="password"]')
+        .clear()
+        .type(user.password);
+      cy.contains('button', 'Login').click();
+    }
   } else {
     cy.visit('/');
     cy.contains('button', 'Login').click();
   }
+  cy.contains('a', 'New Post');
 }
 
 function assertNotification(message) {
-  if (Array.isArray(message)) {
-    console.log(message);
-    const messages = message.reverse();
-    cy.get('.notif__container div')
-      .should('have.length.of', messages.length)
-      .each((el, idx) => {
-        cy.wrap(el)
-          .contains(messages[idx])
-          .invoke('hide');
-      });
-  } else {
-    cy.get('.notif__container').within(() => {
-      cy.contains(message).invoke('hide');
-    });
-  }
+  cy.get('.notif__container').within(() => {
+    cy.contains(message);
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
+    cy.wait(500);
+    cy.contains(message).invoke('hide');
+  });
 }
 
 function exitEditor() {
@@ -44,25 +50,31 @@ function goToCollections() {
   cy.contains('a', 'Content').click();
 }
 
+function goToMediaLibrary() {
+  cy.contains('button', 'Media').click();
+}
+
+function goToEntry(entry) {
+  goToCollections();
+  cy.get('a h2')
+    .first()
+    .contains(entry.title)
+    .click();
+}
+
 function updateWorkflowStatus({ title }, fromColumnHeading, toColumnHeading) {
   cy.contains('h2', fromColumnHeading)
     .parent()
     .contains('a', title)
-    .trigger('dragstart', {
-      dataTransfer: {},
-      force: true,
-    });
+    .drag();
   cy.contains('h2', toColumnHeading)
     .parent()
-    .trigger('drop', {
-      dataTransfer: {},
-      force: true,
-    });
+    .drop();
   assertNotification(notifications.updated);
 }
 
-function publishWorkflowEntry({ title }) {
-  cy.contains('h2', workflowStatus.ready)
+function publishWorkflowEntry({ title }, timeout) {
+  cy.contains('h2', workflowStatus.ready, { timeout })
     .parent()
     .within(() => {
       cy.contains('a', title)
@@ -121,20 +133,24 @@ function deleteEntryInEditor() {
 
 function assertOnCollectionsPage() {
   cy.url().should('contain', '/#/collections/posts');
-  cy.contains('h2', 'Collections');
 }
 
 function assertEntryDeleted(entry) {
-  if (Array.isArray(entry)) {
-    const titles = entry.map(e => e.title);
-    cy.get('a h2').each(el => {
-      expect(titles).not.to.include(el.text());
-    });
-  } else {
-    cy.get('a h2').each(el => {
-      expect(entry.title).not.to.equal(el.text());
-    });
-  }
+  cy.get('body').then($body => {
+    const entriesHeaders = $body.find('a h2');
+    if (entriesHeaders.length > 0) {
+      if (Array.isArray(entry)) {
+        const titles = entry.map(e => e.title);
+        cy.get('a h2').each(el => {
+          expect(titles).not.to.include(el.text());
+        });
+      } else {
+        cy.get('a h2').each(el => {
+          expect(entry.title).not.to.equal(el.text());
+        });
+      }
+    }
+  });
 }
 
 function assertWorkflowStatus({ title }, status) {
@@ -144,22 +160,50 @@ function assertWorkflowStatus({ title }, status) {
 }
 
 function updateWorkflowStatusInEditor(newStatus) {
-  cy.contains('[role="button"]', 'Set status').as('setStatusButton');
-  cy.get('@setStatusButton')
-    .parent()
-    .within(() => {
-      cy.get('@setStatusButton').click();
-      cy.contains('[role="menuitem"] span', newStatus).click();
-    });
+  selectDropdownItem('Set status', newStatus);
   assertNotification(notifications.updated);
 }
 
-function populateEntry(entry) {
+function publishEntryInEditor(publishType) {
+  selectDropdownItem('Publish', publishType);
+  assertNotification(notifications.published);
+}
+
+function selectDropdownItem(label, item) {
+  cy.contains('[role="button"]', label).as('dropDownButton');
+  cy.get('@dropDownButton')
+    .parent()
+    .within(() => {
+      cy.get('@dropDownButton').click();
+      cy.contains('[role="menuitem"] span', item).click();
+    });
+}
+
+function flushClockAndSave() {
+  cy.clock().then(clock => {
+    // some input fields are de-bounced thus require advancing the clock
+    if (clock) {
+      // https://github.com/cypress-io/cypress/issues/1273
+      clock.tick(150);
+      clock.tick(150);
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
+    }
+
+    cy.get('input')
+      .first()
+      .click();
+    cy.contains('button', 'Save').click();
+    assertNotification(notifications.saved);
+  });
+}
+
+function populateEntry(entry, onDone = flushClockAndSave) {
   const keys = Object.keys(entry);
-  for (let key of keys) {
+  for (const key of keys) {
     const value = entry[key];
     if (key === 'body') {
-      cy.get('[data-slate-editor]')
+      cy.getMarkdownEditor()
         .click()
         .clear()
         .type(value);
@@ -170,20 +214,48 @@ function populateEntry(entry) {
     }
   }
 
-  cy.get('input')
-    .first()
-    .click();
-  cy.contains('button', 'Save').click();
-  assertNotification(notifications.saved);
+  onDone();
+}
+
+function newPost() {
+  cy.contains('a', 'New Post').click();
 }
 
 function createPost(entry) {
-  cy.contains('a', 'New Post').click();
+  newPost();
   populateEntry(entry);
 }
 
 function createPostAndExit(entry) {
   createPost(entry);
+  exitEditor();
+}
+
+function publishEntry() {
+  cy.clock().then(clock => {
+    // some input fields are de-bounced thus require advancing the clock
+    if (clock) {
+      // https://github.com/cypress-io/cypress/issues/1273
+      clock.tick(150);
+      clock.tick(150);
+      // eslint-disable-next-line cypress/no-unnecessary-waiting
+      cy.wait(500);
+    }
+
+    cy.contains('[role="button"]', 'Publish').as('publishButton');
+    cy.get('@publishButton')
+      .parent()
+      .within(() => {
+        cy.get('@publishButton').click();
+        cy.contains('[role="menuitem"] span', 'Publish now').click();
+      });
+    assertNotification(notifications.saved);
+  });
+}
+
+function createPostAndPublish(entry) {
+  cy.contains('a', 'New Post').click();
+  populateEntry(entry, publishEntry);
   exitEditor();
 }
 
@@ -196,6 +268,30 @@ function updateExistingPostAndExit(fromEntry, toEntry) {
   exitEditor();
   goToWorkflow();
   cy.contains('h2', toEntry.title);
+}
+
+function unpublishEntry(entry) {
+  goToCollections();
+  cy.contains('h2', entry.title)
+    .parent()
+    .click({ force: true });
+  selectDropdownItem('Published', 'Unpublish');
+  assertNotification(notifications.unpublished);
+  goToWorkflow();
+  assertWorkflowStatus(entry, workflowStatus.ready);
+}
+
+function duplicateEntry(entry) {
+  selectDropdownItem('Published', 'Duplicate');
+  cy.url().should('contain', '/#/collections/posts/new');
+  flushClockAndSave();
+  updateWorkflowStatusInEditor(editorStatus.ready);
+  publishEntryInEditor(publishTypes.publishNow);
+  exitEditor();
+  cy.get('a h2').should($h2s => {
+    expect($h2s.eq(0)).to.contain(entry.title);
+    expect($h2s.eq(1)).to.contain(entry.title);
+  });
 }
 
 function validateObjectFields({ limit, author }) {
@@ -241,7 +337,7 @@ function validateListFields({ name, description }) {
   cy.get('input')
     .eq(2)
     .type(name);
-  cy.get('[data-slate-editor]')
+  cy.getMarkdownEditor()
     .eq(2)
     .type(description);
   cy.contains('button', 'Save').click();
@@ -272,10 +368,12 @@ module.exports = {
   login,
   createPost,
   createPostAndExit,
+  createPostAndPublish,
   updateExistingPostAndExit,
   exitEditor,
   goToWorkflow,
   goToCollections,
+  goToMediaLibrary,
   updateWorkflowStatus,
   publishWorkflowEntry,
   deleteWorkflowEntry,
@@ -289,4 +387,10 @@ module.exports = {
   validateObjectFieldsAndExit,
   validateNestedObjectFieldsAndExit,
   validateListFieldsAndExit,
+  unpublishEntry,
+  publishEntryInEditor,
+  duplicateEntry,
+  newPost,
+  populateEntry,
+  goToEntry,
 };

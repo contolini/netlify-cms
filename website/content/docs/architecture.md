@@ -34,7 +34,7 @@ Selectors are functions defined within reducers used to compute derived data fro
 
 **selectEntries:** Selects all entries for a given collection.
 
-**getAsset:** Selects a single AssetProxy object for the given URI.
+**getAsset:** Selects a single AssetProxy object for the given path.
 
 ## Value Objects
 **AssetProxy:** AssetProxy is a Value Object that holds information regarding an asset file (for example, an image), whether it's persisted online or held locally in cache.

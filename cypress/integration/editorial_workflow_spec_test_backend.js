@@ -18,8 +18,11 @@ import {
   validateObjectFieldsAndExit,
   validateNestedObjectFieldsAndExit,
   validateListFieldsAndExit,
+  unpublishEntry,
+  publishEntryInEditor,
+  duplicateEntry,
 } from '../utils/steps';
-import { setting1, setting2, workflowStatus, editorStatus } from '../utils/constants';
+import { setting1, setting2, workflowStatus, editorStatus, publishTypes } from '../utils/constants';
 
 const entry1 = {
   title: 'first title',
@@ -36,7 +39,7 @@ const entry3 = {
 
 describe('Test Backend Editorial Workflow', () => {
   after(() => {
-    cy.task('restoreDefaults');
+    cy.task('teardownBackend', { backend: 'test' });
   });
 
   before(() => {
@@ -122,5 +125,24 @@ describe('Test Backend Editorial Workflow', () => {
     exitEditor();
     goToWorkflow();
     assertWorkflowStatus(entry1, workflowStatus.ready);
+  });
+
+  it('can unpublish an existing entry', () => {
+    // first publish an entry
+    login();
+    createPostAndExit(entry1);
+    goToWorkflow();
+    updateWorkflowStatus(entry1, workflowStatus.draft, workflowStatus.ready);
+    publishWorkflowEntry(entry1);
+    // then unpublish it
+    unpublishEntry(entry1);
+  });
+
+  it('can duplicate an existing entry', () => {
+    login();
+    createPost(entry1);
+    updateWorkflowStatusInEditor(editorStatus.ready);
+    publishEntryInEditor(publishTypes.publishNow);
+    duplicateEntry(entry1);
   });
 });

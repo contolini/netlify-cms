@@ -15,12 +15,16 @@ import {
   colors,
   components,
   buttons,
-  lengths,
 } from 'netlify-cms-ui-default';
 import { status } from 'Constants/publishModes';
 import SettingsDropdown from 'UI/SettingsDropdown';
 
 const styles = {
+  noOverflow: css`
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  `,
   buttonMargin: css`
     margin: 0 10px;
   `,
@@ -30,7 +34,18 @@ const styles = {
     align-items: center;
     border: 0 solid ${colors.textFieldBorder};
   `,
+  publishedButton: css`
+    background-color: ${colorsRaw.tealLight};
+    color: ${colorsRaw.teal};
+  `,
 };
+
+const DropdownButton = styled(StyledDropdownButton)`
+  ${styles.noOverflow}
+  @media (max-width: 1200px) {
+    padding-left: 10px;
+  }
+`;
 
 const ToolbarContainer = styled.div`
   box-shadow: 0 2px 6px 0 rgba(68, 74, 87, 0.05), 0 1px 3px 0 rgba(68, 74, 87, 0.1),
@@ -130,7 +145,12 @@ const ToolbarButton = styled.button`
   ${buttons.button};
   ${buttons.default};
   ${styles.buttonMargin};
+  ${styles.noOverflow};
   display: block;
+
+  @media (max-width: 1200px) {
+    padding: 0 10px;
+  }
 `;
 
 const DeleteButton = styled(ToolbarButton)`
@@ -141,24 +161,19 @@ const SaveButton = styled(ToolbarButton)`
   ${buttons.lightBlue};
 `;
 
-const StatusPublished = styled.div`
-  ${styles.buttonMargin};
-  border: 1px solid ${colors.textFieldBorder};
-  border-radius: ${lengths.borderRadius};
-  background-color: ${colorsRaw.white};
-  color: ${colorsRaw.teal};
-  padding: 0 24px;
-  line-height: 36px;
-  cursor: default;
-  font-size: 14px;
-  font-weight: 500;
+const PublishedToolbarButton = styled(DropdownButton)`
+  ${styles.publishedButton}
 `;
 
-const PublishButton = styled(StyledDropdownButton)`
+const PublishedButton = styled(ToolbarButton)`
+  ${styles.publishedButton}
+`;
+
+const PublishButton = styled(DropdownButton)`
   background-color: ${colorsRaw.teal};
 `;
 
-const StatusButton = styled(StyledDropdownButton)`
+const StatusButton = styled(DropdownButton)`
   background-color: ${colorsRaw.tealLight};
   color: ${colorsRaw.teal};
 `;
@@ -207,12 +222,16 @@ class EditorToolbar extends React.Component {
     isDeleting: PropTypes.bool,
     onPersist: PropTypes.func.isRequired,
     onPersistAndNew: PropTypes.func.isRequired,
+    onPersistAndDuplicate: PropTypes.func.isRequired,
     showDelete: PropTypes.bool.isRequired,
     onDelete: PropTypes.func.isRequired,
     onDeleteUnpublishedChanges: PropTypes.func.isRequired,
     onChangeStatus: PropTypes.func.isRequired,
     onPublish: PropTypes.func.isRequired,
+    unPublish: PropTypes.func.isRequired,
+    onDuplicate: PropTypes.func.isRequired,
     onPublishAndNew: PropTypes.func.isRequired,
+    onPublishAndDuplicate: PropTypes.func.isRequired,
     user: ImmutablePropTypes.map.isRequired,
     hasChanged: PropTypes.bool,
     displayUrl: PropTypes.string,
@@ -287,16 +306,40 @@ class EditorToolbar extends React.Component {
       collection,
       onPersist,
       onPersistAndNew,
+      onPersistAndDuplicate,
+      onDuplicate,
       isPersisting,
       hasChanged,
       isNewEntry,
       t,
     } = this.props;
+
+    const canCreate = collection.get('create');
     if (!isNewEntry && !hasChanged) {
       return (
         <>
           {this.renderDeployPreviewControls(t('editor.editorToolbar.deployButtonLabel'))}
-          <StatusPublished>{t('editor.editorToolbar.published')}</StatusPublished>
+          {canCreate ? (
+            <ToolbarDropdown
+              dropdownTopOverlap="40px"
+              dropdownWidth="150px"
+              renderButton={() => (
+                <PublishedToolbarButton>
+                  {t('editor.editorToolbar.published')}
+                </PublishedToolbarButton>
+              )}
+            >
+              {
+                <DropdownItem
+                  label={t('editor.editorToolbar.duplicate')}
+                  icon="add"
+                  onClick={onDuplicate}
+                />
+              }
+            </ToolbarDropdown>
+          ) : (
+            <PublishedButton>{t('editor.editorToolbar.published')}</PublishedButton>
+          )}
         </>
       );
     }
@@ -314,17 +357,24 @@ class EditorToolbar extends React.Component {
           )}
         >
           <DropdownItem
-            label="Publish now"
+            label={t('editor.editorToolbar.publishNow')}
             icon="arrow"
             iconDirection="right"
             onClick={onPersist}
           />
-          {collection.get('create') ? (
-            <DropdownItem
-              label={t('editor.editorToolbar.publishAndCreateNew')}
-              icon="add"
-              onClick={onPersistAndNew}
-            />
+          {canCreate ? (
+            <>
+              <DropdownItem
+                label={t('editor.editorToolbar.publishAndCreateNew')}
+                icon="add"
+                onClick={onPersistAndNew}
+              />
+              <DropdownItem
+                label={t('editor.editorToolbar.publishAndDuplicate')}
+                icon="add"
+                onClick={onPersistAndDuplicate}
+              />
+            </>
           ) : null}
         </ToolbarDropdown>
       </div>
@@ -379,12 +429,18 @@ class EditorToolbar extends React.Component {
       isPublishing,
       onChangeStatus,
       onPublish,
+      unPublish,
+      onDuplicate,
       onPublishAndNew,
+      onPublishAndDuplicate,
       currentStatus,
       isNewEntry,
       useOpenAuthoring,
+      isPersisting,
       t,
     } = this.props;
+
+    const canCreate = collection.get('create');
     if (currentStatus) {
       return (
         <>
@@ -403,12 +459,12 @@ class EditorToolbar extends React.Component {
             <StatusDropdownItem
               label={t('editor.editorToolbar.draft')}
               onClick={() => onChangeStatus('DRAFT')}
-              icon={currentStatus === status.get('DRAFT') && 'check'}
+              icon={currentStatus === status.get('DRAFT') ? 'check' : null}
             />
             <StatusDropdownItem
               label={t('editor.editorToolbar.inReview')}
               onClick={() => onChangeStatus('PENDING_REVIEW')}
-              icon={currentStatus === status.get('PENDING_REVIEW') && 'check'}
+              icon={currentStatus === status.get('PENDING_REVIEW') ? 'check' : null}
             />
             {useOpenAuthoring ? (
               ''
@@ -416,7 +472,7 @@ class EditorToolbar extends React.Component {
               <StatusDropdownItem
                 label={t('editor.editorToolbar.ready')}
                 onClick={() => onChangeStatus('PENDING_PUBLISH')}
-                icon={currentStatus === status.get('PENDING_PUBLISH') && 'check'}
+                icon={currentStatus === status.get('PENDING_PUBLISH') ? 'check' : null}
               />
             )}
           </ToolbarDropdown>
@@ -440,12 +496,19 @@ class EditorToolbar extends React.Component {
                 iconDirection="right"
                 onClick={onPublish}
               />
-              {collection.get('create') ? (
-                <DropdownItem
-                  label={t('editor.editorToolbar.publishAndCreateNew')}
-                  icon="add"
-                  onClick={onPublishAndNew}
-                />
+              {canCreate ? (
+                <>
+                  <DropdownItem
+                    label={t('editor.editorToolbar.publishAndCreateNew')}
+                    icon="add"
+                    onClick={onPublishAndNew}
+                  />
+                  <DropdownItem
+                    label={t('editor.editorToolbar.publishAndDuplicate')}
+                    icon="add"
+                    onClick={onPublishAndDuplicate}
+                  />
+                </>
               ) : null}
             </ToolbarDropdown>
           )}
@@ -460,7 +523,31 @@ class EditorToolbar extends React.Component {
       return (
         <>
           {this.renderDeployPreviewControls(t('editor.editorToolbar.deployButtonLabel'))}
-          <StatusPublished>{t('editor.editorToolbar.published')}</StatusPublished>
+          <ToolbarDropdown
+            dropdownTopOverlap="40px"
+            dropdownWidth="150px"
+            renderButton={() => (
+              <PublishedToolbarButton>
+                {isPersisting
+                  ? t('editor.editorToolbar.unpublishing')
+                  : t('editor.editorToolbar.published')}
+              </PublishedToolbarButton>
+            )}
+          >
+            <DropdownItem
+              label={t('editor.editorToolbar.unpublish')}
+              icon="arrow"
+              iconDirection="right"
+              onClick={unPublish}
+            />
+            {canCreate && (
+              <DropdownItem
+                label={t('editor.editorToolbar.duplicate')}
+                icon="add"
+                onClick={onDuplicate}
+              />
+            )}
+          </ToolbarDropdown>
         </>
       );
     }

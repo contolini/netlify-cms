@@ -11,105 +11,174 @@
 // This function is called when a project is opened or re-opened (e.g. due to
 // the project's config changing)
 require('dotenv').config();
-const fs = require('fs-extra');
-const path = require('path');
-const yaml = require('js-yaml');
+const { addMatchImageSnapshotPlugin } = require('cypress-image-snapshot/plugin');
+
 const {
-  prepareTestGitHubRepo,
-  deleteRepositories,
-  getUser,
-  getForkUser,
-  resetRepositories,
+  setupGitHub,
+  teardownGitHub,
+  setupGitHubTest,
+  teardownGitHubTest,
+  seedGitHubRepo,
 } = require('./github');
+const {
+  setupGitGateway,
+  teardownGitGateway,
+  setupGitGatewayTest,
+  teardownGitGatewayTest,
+} = require('./gitGateway');
+const { setupGitLab, teardownGitLab, setupGitLabTest, teardownGitLabTest } = require('./gitlab');
+const {
+  setupBitBucket,
+  teardownBitBucket,
+  setupBitBucketTest,
+  teardownBitBucketTest,
+} = require('./bitbucket');
+const { setupProxy, teardownProxy, setupProxyTest, teardownProxyTest } = require('./proxy');
 
-const devTestDirectory = path.join(__dirname, '..', '..', 'dev-test');
-const backendsDirectory = path.join(devTestDirectory, 'backends');
+const { copyBackendFiles, switchVersion } = require('../utils/config');
 
-async function copyBackendFiles(backend) {
-  for (let file of ['config.yml', 'index.html']) {
-    await fs.copyFile(
-      path.join(backendsDirectory, backend, file),
-      path.join(devTestDirectory, file),
-    );
-  }
-}
-
-async function updateConfig(configModifier) {
-  const configFile = path.join(devTestDirectory, 'config.yml');
-  const configContent = await fs.readFile(configFile);
-  const config = yaml.safeLoad(configContent);
-  await configModifier(config);
-  await fs.writeFileSync(configFile, yaml.safeDump(config));
-  return null;
-}
-
-async function setupGitHub() {
-  const [user, forkUser, repoData] = await Promise.all([
-    getUser(),
-    getForkUser(),
-    prepareTestGitHubRepo(),
-  ]);
-
-  await updateConfig(config => {
-    config.backend.repo = `${repoData.owner}/${repoData.repo}`;
-  });
-
-  return { ...repoData, user, forkUser };
-}
-
-async function teardownGitHub(taskData) {
-  await deleteRepositories(taskData);
-  return null;
-}
-
-async function teardownBackendTest(taskData) {
-  await resetRepositories(taskData);
-  return null;
-}
-
-module.exports = async on => {
+module.exports = async (on, config) => {
   // `on` is used to hook into various events Cypress emits
   on('task', {
-    async setupBackend({ backend }) {
+    async setupBackend({ backend, options }) {
       console.log('Preparing environment for backend', backend);
       await copyBackendFiles(backend);
 
-      if (backend === 'github') {
-        return await setupGitHub();
+      let result = null;
+      switch (backend) {
+        case 'github':
+          result = await setupGitHub(options);
+          break;
+        case 'git-gateway':
+          result = await setupGitGateway(options);
+          break;
+        case 'gitlab':
+          result = await setupGitLab(options);
+          break;
+        case 'bitbucket':
+          result = await setupBitBucket(options);
+          break;
+        case 'proxy':
+          result = await setupProxy(options);
+          break;
       }
 
-      return null;
+      return result;
     },
     async teardownBackend(taskData) {
       const { backend } = taskData;
       console.log('Tearing down backend', backend);
-      if (backend === 'github') {
-        return await teardownGitHub(taskData);
+
+      switch (backend) {
+        case 'github':
+          await teardownGitHub(taskData);
+          break;
+        case 'git-gateway':
+          await teardownGitGateway(taskData);
+          break;
+        case 'gitlab':
+          await teardownGitLab(taskData);
+          break;
+        case 'bitbucket':
+          await teardownBitBucket(taskData);
+          break;
+        case 'proxy':
+          await teardownProxy(taskData);
+          break;
       }
 
-      return null;
-    },
-    async teardownBackendTest(taskData) {
-      const { backend } = taskData;
-      console.log('Tearing down single test for backend', backend);
-      if (backend === 'github') {
-        return await teardownBackendTest(taskData);
-      }
-    },
-    async updateBackendOptions({ backend, options }) {
-      console.log('Updating backend', backend, 'with options', options);
-      if (backend === 'github') {
-        return await updateConfig(config => {
-          config.backend = { ...config.backend, ...options };
-        });
-      }
-      return null;
-    },
-    async restoreDefaults() {
       console.log('Restoring defaults');
       await copyBackendFiles('test');
 
       return null;
     },
+    async setupBackendTest(taskData) {
+      const { backend, testName } = taskData;
+      console.log(`Setting up single test '${testName}' for backend`, backend);
+
+      switch (backend) {
+        case 'github':
+          await setupGitHubTest(taskData);
+          break;
+        case 'git-gateway':
+          await setupGitGatewayTest(taskData);
+          break;
+        case 'gitlab':
+          await setupGitLabTest(taskData);
+          break;
+        case 'bitbucket':
+          await setupBitBucketTest(taskData);
+          break;
+        case 'proxy':
+          await setupProxyTest(taskData);
+          break;
+      }
+
+      return null;
+    },
+    async teardownBackendTest(taskData) {
+      const { backend, testName } = taskData;
+
+      console.log(`Tearing down single test '${testName}' for backend`, backend);
+
+      switch (backend) {
+        case 'github':
+          await teardownGitHubTest(taskData);
+          break;
+        case 'git-gateway':
+          await teardownGitGatewayTest(taskData);
+          break;
+        case 'gitlab':
+          await teardownGitLabTest(taskData);
+          break;
+        case 'bitbucket':
+          await teardownBitBucketTest(taskData);
+          break;
+        case 'proxy':
+          await teardownProxyTest(taskData);
+          break;
+      }
+
+      return null;
+    },
+    async seedRepo(taskData) {
+      const { backend } = taskData;
+
+      console.log(`Seeding repository for backend`, backend);
+
+      switch (backend) {
+        case 'github':
+          await seedGitHubRepo(taskData);
+          break;
+      }
+
+      return null;
+    },
+    async switchToVersion(taskData) {
+      const { version } = taskData;
+
+      console.log(`Switching CMS to version '${version}'`);
+
+      await switchVersion(version);
+
+      return null;
+    },
   });
+
+  on('before:browser:launch', (browser = {}, launchOptions) => {
+    if (browser.name === 'chrome') {
+      // to allows usage of a mock proxy
+      launchOptions.args.push('--ignore-certificate-errors');
+      launchOptions.args.push('-–disable-gpu');
+      if (browser.isHeaded) {
+        launchOptions.args.push('--window-size=1200,1200');
+      } else {
+        launchOptions.args.push('--window-size=1200,1077');
+      }
+
+      return launchOptions;
+    }
+  });
+
+  addMatchImageSnapshotPlugin(on, config);
 };

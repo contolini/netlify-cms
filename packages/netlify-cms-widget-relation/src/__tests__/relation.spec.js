@@ -1,9 +1,7 @@
 import React from 'react';
 import { fromJS, Map } from 'immutable';
 import { last } from 'lodash';
-import { render, fireEvent, wait } from 'react-testing-library';
-import 'react-testing-library/cleanup-after-each';
-import 'jest-dom/extend-expect';
+import { render, fireEvent, wait } from '@testing-library/react';
 import { NetlifyCmsWidgetRelation } from '../';
 
 const RelationControl = NetlifyCmsWidgetRelation.controlComponent;
@@ -14,6 +12,15 @@ const fieldConfig = {
   displayFields: ['title', 'slug'],
   searchFields: ['title', 'body'],
   valueField: 'title',
+};
+
+const customizedOptionsLengthConfig = {
+  name: 'post',
+  collection: 'posts',
+  displayFields: ['title', 'slug'],
+  searchFields: ['title', 'body'],
+  valueField: 'title',
+  optionsLength: 10,
 };
 
 const deeplyNestedFieldConfig = {
@@ -160,6 +167,16 @@ describe('Relation widget', () => {
 
     await wait(() => {
       expect(getAllByText(/^Post # (\d{1,2}) post-number-\1$/)).toHaveLength(20);
+    });
+  });
+
+  it('should list the first 10 option hits on initial load', async () => {
+    const field = fromJS(customizedOptionsLengthConfig);
+    const { getAllByText, input } = setup({ field });
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
+
+    await wait(() => {
+      expect(getAllByText(/^Post # (\d{1,2}) post-number-\1$/)).toHaveLength(10);
     });
   });
 

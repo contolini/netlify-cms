@@ -13,7 +13,7 @@ If you have a Netlify site with Large Media enabled, Netlify CMS (version 2.6.0 
 To use Netlify Large Media with Netlify CMS, you will need to do the following:
 
 - [Upgrade Netlify CMS](/docs/update-the-cms-version/) to version 2.6.0 or above.
-- Configure Netlify CMS to use the [Git Gateway backend with Netlify Identity](/docs/authentication-backends/#git-gateway-with-netlify-identity).
+- Configure Netlify CMS to use the [Git Gateway backend with Netlify Identity](/docs/git-gateway-backend/#git-gateway-with-netlify-identity).
 - Configure the Netlify site and connected repository to use Large Media, following the [Large Media docs on Netlify](https://www.netlify.com/docs/large-media/).
 
 When these are complete, you can use Netlify CMS as normal, and the configured asset files will automatically be handled by Netlify Large Media.
@@ -27,6 +27,8 @@ You can learn more about this feature in [Netlify's image transformation docs](h
 ### Transformation control for media gallery thumbnails
 
 In repositories enabled with Netlify Large Media, Netlify CMS will use the image transformation query parameters to load thumbnail-sized images for the media gallery view. This makes images in the media gallery load significantly faster.
+
+**Note:** When using this option all tracked file types have to be imported into Large Media. For example if you track `*.jpg` but still have jpg-files that are not imported into Large Media the backend will throw an error. Check the [netlify docs](https://docs.netlify.com/large-media/setup/#migrate-files-from-git-history) on how to add previously commited files to Large Media.
 
 You can disable the automatic image transformations with the `use_large_media_transforms_in_media_library` configuration setting, nested under `backend` in the CMS `config.yml` file:
 

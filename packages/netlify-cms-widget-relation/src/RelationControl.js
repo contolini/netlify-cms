@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import ImmutablePropTypes from 'react-immutable-proptypes';
-import AsyncSelect from 'react-select/lib/Async';
+import { Async as AsyncSelect } from 'react-select';
 import { find, isEmpty, last, debounce } from 'lodash';
 import { List, Map, fromJS } from 'immutable';
 import { reactSelectStyles } from 'netlify-cms-ui-default';
@@ -114,7 +114,7 @@ export default class RelationControl extends React.Component {
   };
 
   parseNestedFields = (targetObject, field) => {
-    let nestedField = field.split('.');
+    const nestedField = field.split('.');
     let f = targetObject;
     for (let i = 0; i < nestedField.length; i++) {
       f = f[nestedField[i]];
@@ -153,17 +153,21 @@ export default class RelationControl extends React.Component {
     const { field, query, forID } = this.props;
     const collection = field.get('collection');
     const searchFields = field.get('searchFields');
+    const optionsLength = field.get('optionsLength') || 20;
     const searchFieldsArray = List.isList(searchFields) ? searchFields.toJS() : [searchFields];
 
     query(forID, collection, searchFieldsArray, term).then(({ payload }) => {
-      let options = this.parseHitOptions(payload.response.hits);
+      let options =
+        payload.response && payload.response.hits
+          ? this.parseHitOptions(payload.response.hits)
+          : [];
 
       if (!this.allOptions && !term) {
         this.allOptions = options;
       }
 
       if (!term) {
-        options = options.slice(0, 20);
+        options = options.slice(0, optionsLength);
       }
 
       callback(options);

@@ -5,13 +5,11 @@ import { graphql } from 'gatsby';
 import Layout from '../components/layout';
 import Community from '../components/community';
 
-import '../css/imports/collab.css';
-
 const CommunityPage = ({ data }) => {
   const { title, headline, subhead, sections } = data.markdownRemark.frontmatter;
 
   return (
-    <Layout>
+    <Layout hasPageHero>
       <Helmet title={title} />
       <Community headline={headline} subhead={subhead} sections={sections} />
     </Layout>

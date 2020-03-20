@@ -1,5 +1,5 @@
-import createHistory from 'history/createHashHistory';
+import { createHashHistory } from 'history';
 
-let history = createHistory();
+const history = createHashHistory();
 
 export default history;

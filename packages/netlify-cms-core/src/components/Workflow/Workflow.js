@@ -118,7 +118,7 @@ class Workflow extends Component {
           <WorkflowTopDescription>
             {t('workflow.workflow.description', {
               smart_count: reviewCount,
-              readyCount: readyCount,
+              readyCount,
             })}
           </WorkflowTopDescription>
         </WorkflowTop>
@@ -128,6 +128,7 @@ class Workflow extends Component {
           handlePublish={publishUnpublishedEntry}
           handleDelete={deleteUnpublishedEntry}
           isOpenAuthoring={isOpenAuthoring}
+          collections={collections}
         />
       </WorkflowContainer>
     );
@@ -156,12 +157,9 @@ function mapStateToProps(state) {
   return returnObj;
 }
 
-export default connect(
-  mapStateToProps,
-  {
-    loadUnpublishedEntries,
-    updateUnpublishedEntryStatus,
-    publishUnpublishedEntry,
-    deleteUnpublishedEntry,
-  },
-)(translate()(Workflow));
+export default connect(mapStateToProps, {
+  loadUnpublishedEntries,
+  updateUnpublishedEntryStatus,
+  publishUnpublishedEntry,
+  deleteUnpublishedEntry,
+})(translate()(Workflow));
